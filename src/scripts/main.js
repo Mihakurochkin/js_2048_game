@@ -10,9 +10,10 @@ class Game {
       this.initialState = initialState;
     }
 
-    this.cells = [[], [], [], []];
+    this.cells = [];
     this.score = document.querySelector('.game-score');
     this.table = document.querySelector('.game-field');
+    this.tbody = document.querySelectorAll('.game-field tbody td');
     this.status = 'idle';
   }
 
@@ -28,22 +29,52 @@ class Game {
 
   moveLeft() {
     this.fieldReader(this.table);
-    this.score(this.score);
+    this.printScore(this.score);
   }
 
   moveRight() {
     this.fieldReader(this.table);
-    this.score(this.score);
+    this.printScore(this.score);
   }
 
   moveUp() {
     this.fieldReader(this.table);
-    this.score(this.score);
+    this.printScore(this.score);
   }
 
   moveDown() {
     this.fieldReader(this.table);
-    this.score(this.score);
+    this.printScore(this.score);
+  }
+
+  randomBorn() {
+    return Math.random() < 0.9 ? 2 : 4;
+  }
+
+  born() {
+    let empties = [];
+    const born = this.randomBorn();
+
+    for (let i = 0; i < 16; i++) {
+      if (this.tbody[i].textContent === '') {
+        empties.push(this.tbody[i]);
+      }
+    }
+
+    if (empties.length === 0) {
+      return;
+    }
+
+    let randomEmptyCeil = Math.floor(Math.random() * empties.length);
+
+    while (empties[randomEmptyCeil].textContent !== '') {
+      randomEmptyCeil = Math.floor(Math.random() * empties.length);
+    }
+
+    empties[randomEmptyCeil].textContent = born;
+    empties[randomEmptyCeil].classList.add(`field-cell--${born}`);
+    empties = [];
+    this.printScore();
   }
 
   start() {
@@ -54,40 +85,32 @@ class Game {
       randomIndex2 = Math.floor(Math.random() * 15);
     }
 
-    for (let i = 0; i < 4; i++) {
-      for (let j = 0; j < 4; j++) {
-        if (i * 4 + j === randomIndex1 || i * 4 + j === randomIndex2) {
-          this.table.rows[i].cells[j].classList.add('field-cell--2');
-          this.table.rows[i].cells[j].textContent = 2;
-        }
+    for (let i = 0; i < 16; i++) {
+      if (i === randomIndex1 || i === randomIndex2) {
+        this.tbody[i].classList.add('field-cell--2');
+        this.tbody[i].textContent = 2;
       }
     }
-
     this.status = 'playing';
   }
 
   restart() {
-    for (let i = 0; i < 4; i++) {
-      for (let j = 0; j < 4; j++) {
-        [...this.table.rows[i].cells[j].classList].forEach((item) => {
-          if (item.startsWith('field-cell--')) {
-            this.table.rows[i].cells[j].classList.remove(item);
-          }
-        });
-        this.table.rows[i].cells[j].textContent = '';
-      }
+    for (let i = 0; i < 16; i++) {
+      [...this.tbody[i].classList].forEach((item) => {
+        if (item.startsWith('field-cell--')) {
+          this.tbody[i].classList.remove(item);
+        }
+      });
+      this.tbody[i].textContent = '';
     }
-
     this.status = 'idle';
   }
 
   printScore() {
     let sum = 0;
 
-    for (let i = 0; i < 4; i++) {
-      for (let j = 0; j < 4; j++) {
-        sum += this.cells[i][j];
-      }
+    for (let i = 0; i < 16; i++) {
+      sum += +this.cells[i].textContent;
     }
 
     this.score.textContent = sum;
@@ -95,12 +118,12 @@ class Game {
 
   fieldReader() {
     for (let i = 0; i < 4; i++) {
-      this.cells[i] = [];
+      this.cells.length = 0;
     }
 
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 4; j++) {
-        this.cells[i].push(+this.table.rows[i].cells[j].textContent);
+        this.cells.push(this.table.rows[i].cells[j]);
       }
     }
 
@@ -111,19 +134,25 @@ class Game {
 const game = new Game();
 const start = document.querySelector('.button');
 
-document.addEventListener('keydown', (e) => {
-  switch (e.key) {
-    case 'ArrowUp':
-      game.moveUp();
-      break;
-    case 'ArrowDown':
-      game.moveDown();
-      break;
-    case 'ArrowLeft':
-      game.moveLeft();
-      break;
-    case 'ArrowRight':
-      game.moveRight();
+document.addEventListener('keydown', (ev) => {
+  if (game.status === 'playing') {
+    switch (ev.key) {
+      case 'ArrowUp':
+        game.moveUp();
+        game.born();
+        break;
+      case 'ArrowDown':
+        game.moveDown();
+        game.born();
+        break;
+      case 'ArrowLeft':
+        game.moveLeft();
+        game.born();
+        break;
+      case 'ArrowRight':
+        game.moveRight();
+        game.born();
+    }
   }
 });
 
