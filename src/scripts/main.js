@@ -10,14 +10,13 @@ class Game {
       this.initialState = initialState;
     }
 
-    this.cells = [[1], [], [], []];
+    this.cells = [[], [], [], []];
     this.score = document.querySelector('.game-score');
     this.table = document.querySelector('.game-field');
     this.status = 'idle';
   }
 
-  getState() {
-  }
+  getState() {}
 
   getScore() {
     return this.score;
@@ -134,11 +133,13 @@ start.addEventListener('click', (e) => {
     start.textContent = 'Restart';
     start.classList.add('restart');
     start.classList.remove('start');
+    document.querySelector('.message-container').classList.add('hidden');
   } else {
     game.restart();
     start.textContent = 'Start';
     start.classList.add('start');
     start.classList.remove('restart');
+    document.querySelector('.message-container').classList.remove('hidden');
   }
 
   game.fieldReader();
