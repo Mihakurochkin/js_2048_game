@@ -10,16 +10,17 @@ body {
   font-weight: 900;
 }
 
-.field-cell {
-  background: #d6cdc4;
+.cell {
+  display: flex;
+  position: absolute;
   width: 75px;
   height: 75px;
   border-radius: 5px;
-  color: #776e65;
-  box-sizing: border-box;
-  text-align: center;
-  vertical-align: center;
-  user-select: none;
+  inset: 0;
+  margin: 8px;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
 
   &--2 {
     background: #eee4da;
@@ -75,10 +76,32 @@ body {
   }
 }
 
+.field-cell {
+  background: #d6cdc4;
+  width: 75px;
+  height: 75px;
+  border-radius: 5px;
+  color: #776e65;
+  box-sizing: border-box;
+  text-align: center;
+  vertical-align: center;
+  user-select: none;
+}
+
 .game-field {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  gap: 8px;
   background: #bbada0;
   border-spacing: 10px;
   border-radius: 5px;
+  padding: 8px;
+}
+
+.field-row {
+  display: flex;
+  gap: 8px;
 }
 
 .game-header {
