@@ -10,7 +10,12 @@ class Game {
       this.initialState = initialState;
     }
 
-    this.cells = [[], [], [], []];
+    this.cells = [
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+    ];
     this.score = document.querySelector('.game-score');
     this.table = document.querySelector('.game-field');
     this.tbody = document.querySelectorAll('.game-field tbody td');
@@ -28,6 +33,8 @@ class Game {
   }
 
   moveLeft(cell, n = 1) {
+    this.born();
+
     if (cell.style.left !== '0px') {
       cell.style.left =
         +cell.style.left
@@ -40,6 +47,8 @@ class Game {
   }
 
   moveRight(cell, n = 1) {
+    this.born();
+
     if (cell.style.left !== '249px') {
       cell.style.left =
         +cell.style.left
@@ -52,6 +61,8 @@ class Game {
   }
 
   moveUp(cell, n = 1) {
+    this.born();
+
     if (cell.style.top !== '0px') {
       cell.style.top =
         +cell.style.top
@@ -64,6 +75,8 @@ class Game {
   }
 
   moveDown(cell, n = 1) {
+    this.born();
+
     if (cell.style.top !== '249px') {
       cell.style.top =
         +cell.style.top
@@ -76,6 +89,10 @@ class Game {
   }
 
   born() {
+    if (!this.cells.find((item) => item.includes(0))) {
+      return;
+    }
+
     const newCell = document.createElement('div');
     const random = Math.random() > 0.9 ? 4 : 2;
     const randomPlace = [
@@ -83,6 +100,12 @@ class Game {
       Math.floor(Math.random() * 4),
     ];
 
+    while (this.cells[3 - randomPlace[1]][randomPlace[0]] > 0) {
+      randomPlace[0] = Math.floor(Math.random() * 4);
+      randomPlace[1] = Math.floor(Math.random() * 4);
+    }
+
+    this.cells[3 - randomPlace[1]][randomPlace[0]] = random;
     newCell.style.left = 83 * randomPlace[0] + 'px';
     newCell.style.top = 249 - 83 * randomPlace[1] + 'px';
     newCell.classList.add('cell');
@@ -99,6 +122,12 @@ class Game {
 
   restart() {
     document.querySelectorAll('.cell').forEach((cell) => cell.remove());
+
+    for (let i = 0; i < this.cells.length; i++) {
+      for (let j = 0; j < this.cells[i].length; j++) {
+        this.cells[i][j] = 0;
+      }
+    }
     this.status = 'idle';
   }
 
