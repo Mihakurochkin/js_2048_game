@@ -78,7 +78,13 @@ class Game {
   born() {
     const newCell = document.createElement('div');
     const random = Math.random() > 0.9 ? 4 : 2;
+    const randomPlace = [
+      Math.floor(Math.random() * 4),
+      Math.floor(Math.random() * 4),
+    ];
 
+    newCell.style.left = 83 * randomPlace[0] + 'px';
+    newCell.style.top = 249 - 83 * randomPlace[1] + 'px';
     newCell.classList.add('cell');
     newCell.classList.add(`cell--${random}`);
     newCell.textContent = random;
