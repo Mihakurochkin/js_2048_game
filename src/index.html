@@ -8,6 +8,11 @@
     />
     <title>2048</title>
     <link
+      rel="icon"
+      href="../src/images/2048_logo.png"
+      type="image/png"
+      />
+    <link
       rel="stylesheet"
       href="./styles/main.scss"
     />
@@ -16,13 +21,15 @@
     <div class="container">
       <div class="game-header">
         <h1>2048</h1>
-        <div class="controls">
-          <p class="info">
-            Score:
-            <span class="game-score">0</span>
-          </p>
-          <button class="button start">Start</button>
-        </div>
+        <p class="info info-current">
+          Score:
+          <span class="game-score">0</span>
+        </p>
+        <p class="info info-best">
+          Best:
+          <span class="best-score">0</span>
+        </p>
+        <button class="button start">Start</button>
       </div>
 
       <div class="game-field">
