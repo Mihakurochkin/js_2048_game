@@ -1,196 +1,89 @@
 'use strict';
 
-// Uncomment the next lines to use your game instance in the browser
-// const Game = require('../modules/Game.class');
-// const game = new Game();
+const Game = require('../modules/Game.class');
 
-class Game {
-  constructor(initialState) {
-    if (initialState) {
-      this.initialState = initialState;
-    }
+const game = new Game();
+const button = document.querySelector('.button');
+const scoreElement = document.querySelector('.game-score');
+const bestScoreElement = document.querySelector('.best-score');
 
-    this.cells = [
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-    ];
-    this.score = document.querySelector('.game-score');
-    this.table = document.querySelector('.game-field');
-    this.tbody = document.querySelectorAll('.game-field tbody td');
-    this.status = 'idle';
+const messageStart = document.querySelector('.message-start');
+const messageWin = document.querySelector('.message-win');
+const messageLose = document.querySelector('.message-lose');
+
+bestScoreElement.textContent = localStorage.getItem('bestScore') || 0;
+
+// idle | playing | win | lose
+
+function saveScore() {
+  localStorage.setItem('bestScore', game.getScore());
+}
+
+function gameCallback(e) {
+  if (game.status !== 'playing') {
+    return;
   }
 
-  getState() {}
-
-  getScore() {
-    return this.score;
-  }
-
-  getStatus() {
-    return this.status;
-  }
-
-  moveLeft(cell, n = 1) {
-    this.born();
-
-    if (cell.style.left !== '0px') {
-      cell.style.left =
-        +cell.style.left
-          .split('')
-          .filter((ch) => ch.toUpperCase() === ch.toLowerCase())
-          .join('') -
-        83 * n +
-        'px';
-    }
-  }
-
-  moveRight(cell, n = 1) {
-    this.born();
-
-    if (cell.style.left !== '249px') {
-      cell.style.left =
-        +cell.style.left
-          .split('')
-          .filter((ch) => ch.toUpperCase() === ch.toLowerCase())
-          .join('') +
-        83 * n +
-        'px';
-    }
-  }
-
-  moveUp(cell, n = 1) {
-    this.born();
-
-    if (cell.style.top !== '0px') {
-      cell.style.top =
-        +cell.style.top
-          .split('')
-          .filter((ch) => ch.toUpperCase() === ch.toLowerCase())
-          .join('') -
-        83 * n +
-        'px';
-    }
-  }
-
-  moveDown(cell, n = 1) {
-    this.born();
-
-    if (cell.style.top !== '249px') {
-      cell.style.top =
-        +cell.style.top
-          .split('')
-          .filter((ch) => ch.toUpperCase() === ch.toLowerCase())
-          .join('') +
-        83 * n +
-        'px';
-    }
-  }
-
-  born() {
-    if (!this.cells.find((item) => item.includes(0))) {
+  switch (e.key) {
+    case 'ArrowLeft':
+      game.moveLeft();
+      break;
+    case 'ArrowRight':
+      game.moveRight();
+      break;
+    case 'ArrowUp':
+      game.moveUp();
+      break;
+    case 'ArrowDown':
+      game.moveDown();
+      break;
+    default:
       return;
-    }
-
-    const newCell = document.createElement('div');
-    const random = Math.random() > 0.9 ? 4 : 2;
-    const randomPlace = [
-      Math.floor(Math.random() * 4),
-      Math.floor(Math.random() * 4),
-    ];
-
-    while (this.cells[3 - randomPlace[1]][randomPlace[0]] > 0) {
-      randomPlace[0] = Math.floor(Math.random() * 4);
-      randomPlace[1] = Math.floor(Math.random() * 4);
-    }
-
-    this.cells[3 - randomPlace[1]][randomPlace[0]] = random;
-    newCell.style.left = 83 * randomPlace[0] + 'px';
-    newCell.style.top = 249 - 83 * randomPlace[1] + 'px';
-    newCell.classList.add('cell');
-    newCell.classList.add(`cell--${random}`);
-    newCell.textContent = random;
-    document.querySelector('.game-field').appendChild(newCell);
   }
 
-  start() {
-    this.born();
-    this.born();
-    this.status = 'playing';
+  scoreElement.textContent = game.getScore();
+
+  if (game.getScore() > parseInt(bestScoreElement.textContent)) {
+    bestScoreElement.textContent = game.getScore();
+    saveScore();
   }
 
-  restart() {
-    document.querySelectorAll('.cell').forEach((cell) => cell.remove());
-
-    for (let i = 0; i < this.cells.length; i++) {
-      for (let j = 0; j < this.cells[i].length; j++) {
-        this.cells[i][j] = 0;
-      }
-    }
-    this.status = 'idle';
+  if (game.status === 'lose') {
+    messageLose.classList.remove('hidden');
   }
 
-  printScore() {
-    let sum = 0;
-
-    for (let i = 0; i < 4; i++) {
-      for (let j = 0; j < 4; j++) {
-        sum += +this.cells[i][j].textContent;
-      }
-    }
-
-    this.score.textContent = sum;
-  }
-
-  fieldReader() {
-    for (let i = 0; i < 4; i++) {
-      this.cells[i] = [];
-    }
-
-    for (let i = 0; i < 4; i++) {
-      for (let j = 0; j < 4; j++) {
-        this.cells[i].push(this.table.rows[i].cells[j]);
-      }
-    }
-
-    return this.cells;
+  if (game.status === 'win') {
+    messageWin.classList.remove('hidden');
   }
 }
 
-const game = new Game();
-const start = document.querySelector('.button');
-
-document.addEventListener('keydown', (ev) => {
-  const cell = document.querySelector('.cell');
-
-  switch (ev.key) {
-    case 'ArrowRight':
-      game.moveRight(cell);
-      break;
-    case 'ArrowLeft':
-      game.moveLeft(cell);
-      break;
-    case 'ArrowUp':
-      game.moveUp(cell);
-      break;
-    case 'ArrowDown':
-      game.moveDown(cell);
-  }
-});
-
-start.addEventListener('click', (e) => {
-  if (game.status === 'idle') {
-    game.start();
-    start.textContent = 'Restart';
-    start.classList.add('restart');
-    start.classList.remove('start');
-    document.querySelector('.message-start').classList.add('hidden');
-  } else {
+button.addEventListener('click', () => {
+  if (game.status === 'playing') {
     game.restart();
-    start.textContent = 'Start';
-    start.classList.add('start');
-    start.classList.remove('restart');
-    document.querySelector('.message-start').classList.remove('hidden');
+
+    button.textContent = 'Start';
+    button.classList.add('start');
+    button.classList.remove('restart');
+
+    scoreElement.textContent = game.getScore();
+
+    messageStart.classList.remove('hidden');
+    messageLose.classList.add('hidden');
+    messageWin.classList.add('hidden');
+
+    document.removeEventListener('keydown', gameCallback);
+  } else {
+    game.start();
+    button.textContent = 'Restart';
+    button.classList.add('restart');
+    button.classList.remove('start');
+
+    messageStart.classList.add('hidden');
+    messageLose.classList.add('hidden');
+    messageWin.classList.add('hidden');
+
+    scoreElement.textContent = game.getScore();
+
+    document.addEventListener('keydown', gameCallback);
   }
 });
