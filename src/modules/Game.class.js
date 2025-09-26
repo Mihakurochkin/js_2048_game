@@ -3,14 +3,15 @@
 class Game {
   constructor() {
     this.state = [
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
+      [null, null, null, null],
+      [null, null, null, null],
+      [null, null, null, null],
+      [null, null, null, null],
     ];
     this.score = 0;
     this.status = 'idle';
     this.moved = false;
+    this.nextCellId = 1;
   }
 
   getState() {
@@ -26,167 +27,247 @@ class Game {
   }
 
   moveLeft() {
-    for (let i = 0; i < this.state.length; i++) {
+    const stateCopy = this.state.map((row) => {
+      return row.map((cell) => (cell ? { ...cell } : null));
+    });
+    const transitions = [];
+
+    this.moved = false;
+
+    for (let i = 0; i < stateCopy.length; i++) {
       const merged = [false, false, false, false];
 
-      for (let j = 1; j < this.state[i].length; j++) {
-        if (this.state[i][j] === 0) {
+      for (let j = 0; j < stateCopy[i].length; j++) {
+        if (stateCopy[i][j] === null) {
           continue;
         }
 
         let k = j;
 
-        while (k > 0 && this.state[i][k - 1] === 0) {
-          this.state[i][k - 1] = this.state[i][k];
-          this.state[i][k] = 0;
-          this.moved = true;
+        while (k > 0 && stateCopy[i][k - 1] === null) {
           k--;
+        }
+
+        if (k !== j) {
+          stateCopy[i][k] = stateCopy[i][j];
+          stateCopy[i][j] = null;
+          this.moved = true;
+
+          transitions.push({
+            id: stateCopy[i][k].id,
+            type: 'move',
+            from: [i, j],
+            to: [i, k],
+          });
         }
 
         if (
           k > 0 &&
-          this.state[i][k - 1] === this.state[i][k] &&
-          !merged[k - 1] &&
-          !merged[k]
+          stateCopy[i][k - 1] !== null &&
+          stateCopy[i][k].value === stateCopy[i][k - 1].value &&
+          !merged[k - 1]
         ) {
-          this.state[i][k - 1] *= 2;
-          this.score += this.state[i][k - 1];
-          this.state[i][k] = 0;
+          transitions.push({
+            id: stateCopy[i][k].id,
+            type: 'merge',
+            from: [i, k],
+            to: [i, k - 1],
+            mergeIntoId: stateCopy[i][k - 1].id,
+          });
+
+          stateCopy[i][k - 1].value *= 2;
+          this.score += stateCopy[i][k - 1].value;
+          stateCopy[i][k] = null;
           merged[k - 1] = true;
           this.moved = true;
         }
       }
     }
 
-    if (this.moved) {
-      this.born();
-    }
-
-    this.moved = false;
-    this.check();
+    return { newState: stateCopy, transitions, moved: this.moved };
   }
 
   moveRight() {
-    for (let i = 0; i < this.state.length; i++) {
+    const stateCopy = this.state.map((row) => {
+      return row.map((cell) => (cell ? { ...cell } : null));
+    });
+    const transitions = [];
+
+    this.moved = false;
+
+    for (let i = 0; i < stateCopy.length; i++) {
       const merged = [false, false, false, false];
 
-      for (let j = this.state[i].length - 2; j >= 0; j--) {
-        if (this.state[i][j] === 0) {
+      for (let j = stateCopy[i].length - 1; j >= 0; j--) {
+        if (stateCopy[i][j] === null) {
           continue;
         }
 
         let k = j;
 
-        while (k < this.state[i].length - 1 && this.state[i][k + 1] === 0) {
-          this.state[i][k + 1] = this.state[i][k];
-          this.state[i][k] = 0;
-          this.moved = true;
+        while (k < stateCopy[i].length - 1 && stateCopy[i][k + 1] === null) {
           k++;
         }
 
+        if (k !== j) {
+          stateCopy[i][k] = stateCopy[i][j];
+          stateCopy[i][j] = null;
+          this.moved = true;
+
+          transitions.push({
+            id: stateCopy[i][k].id,
+            type: 'move',
+            from: [i, j],
+            to: [i, k],
+          });
+        }
+
         if (
-          k < this.state[i].length - 1 &&
-          this.state[i][k + 1] === this.state[i][k] &&
-          !merged[k + 1] &&
-          !merged[k]
+          k < stateCopy[i].length - 1 &&
+          stateCopy[i][k + 1] !== null &&
+          stateCopy[i][k].value === stateCopy[i][k + 1].value &&
+          !merged[k + 1]
         ) {
-          this.state[i][k + 1] *= 2;
-          this.score += this.state[i][k + 1];
-          this.state[i][k] = 0;
+          transitions.push({
+            id: stateCopy[i][k].id,
+            type: 'merge',
+            from: [i, k],
+            to: [i, k + 1],
+            mergeIntoId: stateCopy[i][k + 1].id,
+          });
+
+          stateCopy[i][k + 1].value *= 2;
+          this.score += stateCopy[i][k + 1].value;
+          stateCopy[i][k] = null;
           merged[k + 1] = true;
           this.moved = true;
         }
       }
     }
 
-    if (this.moved) {
-      this.born();
-    }
-
-    this.moved = false;
-    this.check();
+    return { newState: stateCopy, transitions, moved: this.moved };
   }
 
   moveUp() {
-    for (let j = 0; j < this.state[0].length; j++) {
+    const stateCopy = this.state.map((row) => {
+      return row.map((cell) => (cell ? { ...cell } : null));
+    });
+    const transitions = [];
+
+    this.moved = false;
+
+    for (let j = 0; j < stateCopy[0].length; j++) {
       const merged = [false, false, false, false];
 
-      for (let i = 1; i < this.state.length; i++) {
-        if (this.state[i][j] === 0) {
+      for (let i = 0; i < stateCopy.length; i++) {
+        if (stateCopy[i][j] === null) {
           continue;
         }
 
         let k = i;
 
-        while (k > 0 && this.state[k - 1][j] === 0) {
-          this.state[k - 1][j] = this.state[k][j];
-          this.state[k][j] = 0;
-          this.moved = true;
+        while (k > 0 && stateCopy[k - 1][j] === null) {
           k--;
+        }
+
+        if (k !== i) {
+          stateCopy[k][j] = stateCopy[i][j];
+          stateCopy[i][j] = null;
+          this.moved = true;
+
+          transitions.push({
+            id: stateCopy[k][j].id,
+            type: 'move',
+            from: [i, j],
+            to: [k, j],
+          });
         }
 
         if (
           k > 0 &&
-          this.state[k - 1][j] === this.state[k][j] &&
-          !merged[k - 1] &&
-          !merged[k]
+          stateCopy[k - 1][j] !== null &&
+          stateCopy[k][j].value === stateCopy[k - 1][j].value &&
+          !merged[k - 1]
         ) {
-          this.state[k - 1][j] *= 2;
-          this.score += this.state[k - 1][j];
-          this.state[k][j] = 0;
+          transitions.push({
+            id: stateCopy[k][j].id,
+            type: 'merge',
+            from: [k, j],
+            to: [k - 1, j],
+            mergeIntoId: stateCopy[k - 1][j].id,
+          });
+
+          stateCopy[k - 1][j].value *= 2;
+          this.score += stateCopy[k - 1][j].value;
+          stateCopy[k][j] = null;
           merged[k - 1] = true;
           this.moved = true;
         }
       }
     }
 
-    if (this.moved) {
-      this.born();
-    }
-
-    this.moved = false;
-    this.check();
+    return { newState: stateCopy, transitions, moved: this.moved };
   }
 
   moveDown() {
-    for (let j = 0; j < this.state[0].length; j++) {
+    const stateCopy = this.state.map((row) => {
+      return row.map((cell) => (cell ? { ...cell } : null));
+    });
+    const transitions = [];
+
+    this.moved = false;
+
+    for (let j = 0; j < stateCopy[0].length; j++) {
       const merged = [false, false, false, false];
 
-      for (let i = this.state.length - 2; i >= 0; i--) {
-        if (this.state[i][j] === 0) {
+      for (let i = stateCopy.length - 1; i >= 0; i--) {
+        if (stateCopy[i][j] === null) {
           continue;
         }
 
         let k = i;
 
-        while (k < this.state.length - 1 && this.state[k + 1][j] === 0) {
-          this.state[k + 1][j] = this.state[k][j];
-          this.state[k][j] = 0;
-          this.moved = true;
+        while (k < stateCopy.length - 1 && stateCopy[k + 1][j] === null) {
           k++;
         }
 
+        if (k !== i) {
+          stateCopy[k][j] = stateCopy[i][j];
+          stateCopy[i][j] = null;
+          this.moved = true;
+
+          transitions.push({
+            id: stateCopy[k][j].id,
+            type: 'move',
+            from: [i, j],
+            to: [k, j],
+          });
+        }
+
         if (
-          k < this.state.length - 1 &&
-          this.state[k + 1][j] === this.state[k][j] &&
-          !merged[k + 1] &&
-          !merged[k]
+          k < stateCopy.length - 1 &&
+          stateCopy[k + 1][j] !== null &&
+          stateCopy[k][j].value === stateCopy[k + 1][j].value &&
+          !merged[k + 1]
         ) {
-          this.state[k + 1][j] *= 2;
-          this.score += this.state[k + 1][j];
-          this.state[k][j] = 0;
+          transitions.push({
+            id: stateCopy[k][j].id,
+            type: 'merge',
+            from: [k, j],
+            to: [k + 1, j],
+            mergeIntoId: stateCopy[k + 1][j].id,
+          });
+
+          stateCopy[k + 1][j].value *= 2;
+          this.score += stateCopy[k + 1][j].value;
+          stateCopy[k][j] = null;
           merged[k + 1] = true;
           this.moved = true;
         }
       }
     }
 
-    if (this.moved) {
-      this.born();
-    }
-
-    this.moved = false;
-    this.check();
+    return { newState: stateCopy, transitions, moved: this.moved };
   }
 
   defineStep([rowIndex, columnIndex], direction) {
@@ -255,58 +336,50 @@ class Game {
 
   restart() {
     this.state = [
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
+      [null, null, null, null],
+      [null, null, null, null],
+      [null, null, null, null],
+      [null, null, null, null],
     ];
     this.status = 'idle';
     this.score = 0;
+    this.nextCellId = 1;
   }
 
   check() {
-    if (this.score >= 2048) {
-      this.status = 'win';
-
-      return;
-    }
-
-    let possibleToMove = false;
-    let current;
-
     for (let i = 0; i < this.state.length; i++) {
-      if (this.state[i].includes(0)) {
-        possibleToMove = true;
-
-        return;
-      }
-
       for (let j = 0; j < this.state[i].length; j++) {
-        current = this.state[i][j];
+        const current = this.state[i][j];
 
-        if (current === 0) {
-          possibleToMove = true;
-
-          return;
-        }
-
-        if (j < this.state[i].length - 1 && this.state[i][j + 1] === current) {
-          possibleToMove = true;
+        if (current !== null && current.value >= 2048) {
+          this.status = 'win';
 
           return;
         }
 
-        if (i < this.state.length - 1 && this.state[i + 1][j] === current) {
-          possibleToMove = true;
-
+        if (!current) {
           return;
+        }
+
+        if (j < this.state[i].length - 1) {
+          const rightCell = this.state[i][j + 1];
+
+          if (rightCell !== null && rightCell.value === current.value) {
+            return;
+          }
+        }
+
+        if (i < this.state.length - 1) {
+          const downCell = this.state[i + 1][j];
+
+          if (downCell !== null && downCell.value === current.value) {
+            return;
+          }
         }
       }
     }
 
-    if (!possibleToMove) {
-      this.status = 'lose';
-    }
+    this.status = 'lose';
   }
 
   born() {
@@ -314,7 +387,7 @@ class Game {
 
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 4; j++) {
-        if (this.state[i][j] === 0) {
+        if (this.state[i][j] === null) {
           emptyCells.push([i, j]);
         }
       }
@@ -327,8 +400,50 @@ class Game {
     const [row, col] =
       emptyCells[Math.floor(Math.random() * emptyCells.length)];
     const value = Math.random() < 0.1 ? 4 : 2;
+    const clearStateCell = { id: this.nextCellId++, value };
 
-    this.state[row][col] = value;
+    this.state[row][col] = clearStateCell;
+
+    const spawnTransition = {
+      id: clearStateCell.id,
+      type: 'spawn',
+      to: [row, col],
+      value,
+    };
+
+    return spawnTransition;
+  }
+
+  performMove(direction) {
+    let moveResult;
+
+    switch (direction) {
+      case 'LEFT':
+        moveResult = this.moveLeft();
+        break;
+      case 'RIGHT':
+        moveResult = this.moveRight();
+        break;
+      case 'UP':
+        moveResult = this.moveUp();
+        break;
+      case 'DOWN':
+        moveResult = this.moveDown();
+        break;
+      default:
+        return { newState: this.state, transitions: [], moved: false };
+    }
+
+    if (moveResult.moved) {
+      this.state = moveResult.newState;
+
+      const spawnTransition = this.born();
+
+      moveResult.transitions.push(spawnTransition);
+      this.check();
+    }
+
+    return moveResult;
   }
 }
 
