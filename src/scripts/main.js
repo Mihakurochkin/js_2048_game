@@ -95,7 +95,19 @@ function gameCallback(e) {
 
   if (prevMoveEnded) {
     let result;
-    const direction = e.key.replace('Arrow', '').toUpperCase();
+    let direction = null;
+
+    if (
+      e.type === 'keydown' &&
+      e.key &&
+      ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)
+    ) {
+      direction = e.key.replace('Arrow', '').toUpperCase();
+    }
+
+    if (e.type === 'swipe') {
+      direction = e.swipeDirection;
+    }
 
     if (['LEFT', 'RIGHT', 'UP', 'DOWN'].includes(direction)) {
       result = game.performMove(direction);
