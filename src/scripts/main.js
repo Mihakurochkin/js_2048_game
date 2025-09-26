@@ -105,10 +105,6 @@ function gameCallback(e) {
       direction = e.key.replace('Arrow', '').toUpperCase();
     }
 
-    if (e.type === 'swipe') {
-      direction = e.swipeDirection;
-    }
-
     if (['LEFT', 'RIGHT', 'UP', 'DOWN'].includes(direction)) {
       result = game.performMove(direction);
     } else {
