@@ -6,7 +6,6 @@ const game = new Game();
 const button = document.querySelector('.button');
 
 const field = document.querySelector('.game-field');
-const fieldCells = document.querySelectorAll('.field-cell');
 
 const scoreElement = document.querySelector('.game-score');
 const bestScoreElement = document.querySelector('.best-score');
@@ -153,9 +152,8 @@ function initialiseBoard(boardState) {
 }
 
 button.addEventListener('click', () => {
-  if (game.status === 'playing') {
+  if (game.status !== 'idle') {
     game.restart();
-
     clearBoard();
 
     button.textContent = 'Start';
@@ -168,21 +166,21 @@ button.addEventListener('click', () => {
     messageLose.classList.add('hidden');
     messageWin.classList.add('hidden');
 
-    fieldCells.forEach((cell) => {
-      cell.className = 'field-cell';
-      cell.textContent = '';
-    });
-
     document.removeEventListener('keydown', gameCallback);
-  } else {
+
+    if (game.status === 'idle' && button.textContent === 'Start') {
+      return;
+    }
+  }
+
+  if (button.textContent === 'Start') {
     game.start();
+
     button.textContent = 'Restart';
     button.classList.remove('start');
     button.classList.add('restart');
 
     messageStart.classList.add('hidden');
-    messageLose.classList.add('hidden');
-    messageWin.classList.add('hidden');
 
     initialiseBoard(game.getState());
 
